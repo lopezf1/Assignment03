@@ -48,15 +48,3 @@ p1 + geom_histogram()
 
 p2 <- ggplot(df, aes(Month, fill = X.My.Position.3..Employee.Name))
 p2 + geom_histogram()
-
-head(df$My.Position.3..Employee.Name)
-
-
-str(diamonds)
-head(diamonds$cut)
-head(diamonds)
-
-p <- ggplot(diamonds, aes(x=clarity))
-p + geom_histogram()
-p <- ggplot(diamonds, aes(x = clarity, fill = cut))
-p + geom_histogram()
