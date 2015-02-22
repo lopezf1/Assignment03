@@ -30,10 +30,12 @@ df$Month <- month.abb[df$Month]
 
 write.csv(df, 'erate_03.csv')
 
-# Identify valid E-Rate contributors
+# Identify valid E-Rate contributors and redefine data frame to just those valid members.
 
+valid_member <- read.csv('validmember.csv')
+df <- merge(df, valid_member, by = c('SR.WR.Owner.Name'), all.x = TRUE)
 
-# Create Week column
+# Add Week column
 
 df$Week <- 1
 df$Week <- df[,"SR.WR.Status.Status.Detail.Start.Week"]
@@ -48,3 +50,7 @@ p1 + geom_histogram()
 
 p2 <- ggplot(df, aes(Month, fill = X.My.Position.3..Employee.Name))
 p2 + geom_histogram()
+
+p3 <- qplot(data=df, x=Month, facets=.~Valid.Member, fill=X.My.Position.2..Employee.Name)
+ggsave(file='test.png', plot=p3)
+
