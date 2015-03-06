@@ -26,7 +26,7 @@ df$Month <- 1
 df$ON.SR.WR.Status.Status.Detail.Start.Date <- as.character(df$ON.SR.WR.Status.Status.Detail.Start.Date)
 df$ON.SR.WR.Status.Status.Detail.Start.Date <- strptime(df$ON.SR.WR.Status.Status.Detail.Start.Date, format=("%m/%d/%Y %H:%M"))
 df$Month <- df$ON.SR.WR.Status.Status.Detail.Start.Date$mon+1
-df$Month <- month.abb[df$Month]
+#df$Month <- month.abb[df$Month]
 
 write.csv(df, 'erate_03.csv')
 
@@ -52,5 +52,29 @@ p2 <- ggplot(df, aes(Month, fill = X.My.Position.3..Employee.Name))
 p2 + geom_histogram()
 
 p3 <- qplot(data=df, x=Month, facets=.~Valid.Member, fill=X.My.Position.2..Employee.Name)
-ggsave(file='test.png', plot=p3)
+ggsave(file='test.png', plot=p3)  # Using qplot (very basic)
 
+p4 <- ggplot(df, aes(Month, fill=X.My.Position.2..Employee.Name))
+p4 <- p4 + geom_histogram() +
+  facet_grid(.~Valid.Member) +
+  theme_bw(base_family="Times", base_size=14) +
+  labs(x="Month", y="Inbound SR/WR", title="Plot of Inbound Volume per Factory Tower") +
+  xlim(1, 12)
+print(p4)
+ggsave(file="test2.png", plot=p4)  
+
+# Practise only
+
+mpg
+qplot(data=mpg, x=hwy, y=displ, facets=.~drv, geom=c("point", "smooth"), method="lm")
+g1 <- ggplot(mpg, aes(x=displ, y=hwy))
+g1 + geom_point(color="steelblue", size=3, alpha=1/2) + 
+  geom_smooth(method="lm") +
+  facet_grid(.~drv)
+
+ggplot(mpg, aes(x=displ, y=hwy)) +
+  geom_point(aes(color=drv), size=3, alpha=1/2) + 
+  labs(title="How HWY Mileage is Affected by Displacement", x="Displacement", y="Highway Mileage") + geom_smooth(method="lm") + 
+  facet_wrap(~trans, nrow=2, ncol=5) + theme_bw(base_family="Times")
+
+str(mpg)
