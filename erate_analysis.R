@@ -1,9 +1,12 @@
+setwd("~/Coursera")
+library(ggplot2)
+
 df <- read.csv('erate.csv')
 
-names(df)
-head(df)
+str(df)
 
-# Deals greater than $10,000,000
+# Output deals greater than $10,000,000.  Create column, titled "Duplicate" 
+# to filter out any duplicate entries.
 
 df$Duplicate <- 1
 big <-df[df$Opty.Revenue..TOV. > 10000000, c("Opportunity.Account.Name", 
@@ -20,13 +23,13 @@ big[big$Duplicate==FALSE,]
 write.csv(df, 'erate_02.csv')
 write.csv(big, 'big_01.csv')
 
-# Create Month column and set datetime to POSIXlt and POSIXt format for analysis.
+# Convert ON.SR.WR.Status.Status.Detail.Start.Date from Factor to POSIXlt.  Create a new
+# column, titled "Month".
 
-df$Month <- 1
-df$ON.SR.WR.Status.Status.Detail.Start.Date <- as.character(df$ON.SR.WR.Status.Status.Detail.Start.Date)
-df$ON.SR.WR.Status.Status.Detail.Start.Date <- strptime(df$ON.SR.WR.Status.Status.Detail.Start.Date, format=("%m/%d/%Y %H:%M"))
-df$Month <- df$ON.SR.WR.Status.Status.Detail.Start.Date$mon+1
-#df$Month <- month.abb[df$Month]
+startDate <- as.character(df$ON.SR.WR.Status.Status.Detail.Start.Date)
+startDate <- strptime(startDate, format=("%m/%d/%Y %H:%M"))
+df$ON.SR.WR.Status.Status.Detail.Start.Date <- startDate
+df$Month <- format.POSIXlt(startDate, "%m")
 
 write.csv(df, 'erate_03.csv')
 
@@ -35,46 +38,32 @@ write.csv(df, 'erate_03.csv')
 valid_member <- read.csv('validmember.csv')
 df <- merge(df, valid_member, by = c('SR.WR.Owner.Name'), all.x = TRUE)
 
-# Add Week column
+# Convert SR.WR.Status.Status.Detail.Start.Week from Factor to Character  Create a new
+# column, titled "Week".  Capture only the week number.
 
-df$Week <- 1
 df$Week <- df[,"SR.WR.Status.Status.Detail.Start.Week"]
 df$Week <- as.character(df$Week)
 df$Week <- substr(df$Week, start = 10, stop = 12)
 
-# Plot inbound SR/WR volumes per week and month
+# Plot inbound SR/WR volumes per week and month using ggplot2.
 
-library(ggplot2)
 p1 <- ggplot(df, aes(Week, fill = X.My.Position.2..Employee.Name))
-p1 + geom_histogram()
-
-p2 <- ggplot(df, aes(Month, fill = X.My.Position.3..Employee.Name))
-p2 + geom_histogram()
-
-p3 <- qplot(data=df, x=Month, facets=.~Valid.Member, fill=X.My.Position.2..Employee.Name)
-ggsave(file='test.png', plot=p3)  # Using qplot (very basic)
-
-p4 <- ggplot(df, aes(Month, fill=X.My.Position.2..Employee.Name))
-p4 <- p4 + geom_histogram() +
+p1<- p1 + geom_histogram() +
   facet_grid(.~Valid.Member) +
   theme_bw(base_family="Times", base_size=14) +
-  labs(x="Month", y="Inbound SR/WR", title="Plot of Inbound Volume per Factory Tower") +
-  xlim(1, 12)
-print(p4)
-ggsave(file="test2.png", plot=p4)  
+  labs(x="Week", y="Inbound SR/WR", title="Plot of Weekly Inbound Volume per Factory Tower")
+print(p1)
 
-# Practise only
+p2 <- ggplot(df, aes(Month, fill=X.My.Position.2..Employee.Name))
+p2 <- p2 + geom_histogram() +
+  facet_grid(.~Valid.Member) +
+  theme_bw(base_family="Times", base_size=14) +
+  labs(x="Month", y="Inbound SR/WR", title="Plot of Monthly Inbound Volume per Factory Tower")
+print(p2)
 
-mpg
-qplot(data=mpg, x=hwy, y=displ, facets=.~drv, geom=c("point", "smooth"), method="lm")
-g1 <- ggplot(mpg, aes(x=displ, y=hwy))
-g1 + geom_point(color="steelblue", size=3, alpha=1/2) + 
-  geom_smooth(method="lm") +
-  facet_grid(.~drv)
+ggsave(file="Weekly Inbound.png", plot=p1)
+ggsave(file="Monthly Inbound.png", plot=p2) 
 
-ggplot(mpg, aes(x=displ, y=hwy)) +
-  geom_point(aes(color=drv), size=3, alpha=1/2) + 
-  labs(title="How HWY Mileage is Affected by Displacement", x="Displacement", y="Highway Mileage") + geom_smooth(method="lm") + 
-  facet_wrap(~trans, nrow=2, ncol=5) + theme_bw(base_family="Times")
 
-str(mpg)
+
+
